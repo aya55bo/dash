@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Excel - Budget et Qualité</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-chart-line"></i> Analytics</h2>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Dashboard</h1>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <h3><i class="fas fa-sliders-h"></i> Paramètres</h3>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label for="input-excel">Fichier Excel</label>
+            <input type="file" id="input-excel" />
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label for="date-debut">Date de début</label>
+            <input type="date" id="date-debut" />
+          </div>
+          <div class="filter-group">
+            <label for="date-fin">Date de fin</label>
+            <input type="date" id="date-fin" />
+          </div>
+        </div>
+        <button id="applyFilters"><i class="fas fa-filter"></i> Appliquer les filtres</button>
+      </div>
+
+      <!-- Toggle Buttons -->
+      <div class="toggle-buttons">
+        <button class="toggle-btn active" onclick="showSection('achats')">
+          <i class="fas fa-shopping-cart"></i> Achats
+        </button>
+        <button class="toggle-btn" onclick="showSection('ventes')">
+          <i class="fas fa-cash-register"></i> Ventes
+        </button>
+      </div>
+
+      <!-- SECTION ACHATS -->
+      <div id="achats-section" class="content-section active">
+        <!-- KPI Cards Achats -->
+        <div class="cards">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Total Achats (OK uniquement)</div>
+              <div class="card-icon primary"><i class="fas fa-shopping-cart"></i></div>
+            </div>
+            <div class="card-value" id="totalAchats">0</div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Articles Uniques</div>
+              <div class="card-icon success"><i class="fas fa-boxes"></i></div>
+            </div>
+            <div class="card-value" id="nombreArticlesAchats">0</div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Fournisseurs</div>
+              <div class="card-icon danger"><i class="fas fa-truck"></i></div>
+            </div>
+            <div class="card-value" id="nombreFournisseurs">0</div>
+          </div>
+        </div>
+
+        <!-- Charts Achats -->
+        <div class="charts">
+          <div class="chart-container">
+            <div class="chart-title">Répartition des achats par fournisseur (OK uniquement)</div>
+            <div style="height: 300px;">
+              <canvas id="fournisseurChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <div class="chart-title">Budget vs Achats par Article</div>
+            <div style="height: 300px;">
+              <canvas id="budgetVsAchatsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts spécifiques aux achats -->
+        <div class="charts">
+          <div class="chart-container">
+            <div class="chart-title">Qualité moyenne par article (Achats uniquement)</div>
+            <div style="height: 300px;">
+              <canvas id="qualiteAchatsChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <div class="chart-title">Répartition Qualité - Achats (Histogramme)</div>
+            <div style="height: 300px;">
+              <canvas id="histogrammeQualiteAchats"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts">
+          <div class="chart-container">
+            <div class="chart-title">Top 5 Fournisseurs – Qualité/Prix</div>
+            <table id="topFournisseursTable">
+              <thead>
+                <tr>
+                  <th>Fournisseur</th>
+                  <th>Volume Achats (MAD)</th>
+                  
+                  <th>Qualité %</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          
+          <div class="chart-container">
+            <div class="chart-title">Meilleur prix par produit</div>
+            <table id="bestPriceTable">
+              <thead>
+                <tr><th>Article</th><th>Fournisseur</th><th>Prix Unitaire</th><th>Qualité</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION VENTES -->
+      <div id="ventes-section" class="content-section">
+        <!-- KPI Cards Ventes -->
+        <div class="cards">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Total Ventes (OK uniquement)</div>
+              <div class="card-icon success"><i class="fas fa-cash-register"></i></div>
+            </div>
+            <div class="card-value" id="totalVentes">0</div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Articles Uniques</div>
+              <div class="card-icon primary"><i class="fas fa-boxes"></i></div>
+            </div>
+            <div class="card-value" id="nombreArticlesVentes">0</div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Clients</div>
+              <div class="card-icon danger"><i class="fas fa-users"></i></div>
+            </div>
+            <div class="card-value" id="nombreClients">0</div>
+          </div>
+        </div>
+
+        <!-- Charts Ventes -->
+        <div class="charts">
+          <div class="chart-container">
+            <div class="chart-title">Répartition des ventes par client (OK uniquement)</div>
+            <div style="height: 300px;">
+              <canvas id="clientChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <div class="chart-title">Objectif vs Ventes par Article</div>
+            <div style="height: 300px;">
+              <canvas id="objectifVsVentesChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts spécifiques aux ventes -->
+        <div class="charts">
+          <div class="chart-container">
+            <div class="chart-title">Qualité moyenne par article (Ventes uniquement)</div>
+            <div style="height: 300px;">
+              <canvas id="qualiteVentesChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <div class="chart-title">Répartition Qualité - Ventes (Histogramme)</div>
+            <div style="height: 300px;">
+              <canvas id="histogrammeQualiteVentes"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts">
+          <div class="chart-container">
+            <div class="chart-title">Top 5 Clients – Performance</div>
+            <table id="topClientsTable">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Volume Ventes (MAD)</th>
+                  
+                  <th>Qualité %</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          
+          <div class="chart-container">
+            <div class="chart-title">Meilleur prix de vente par produit</div>
+            <table id="bestSalePriceTable">
+              <thead>
+                <tr><th>Article</th><th>Client</th><th>Prix Unitaire</th><th>Qualité</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="charts.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
